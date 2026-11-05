@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Log Analyzer: Cybersecurity Capstone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f6f8fa;--panel:#fff;--ink:#14202b;--muted:#52616e;--line:#d6dde3;--accent:#1f6f8b;--term:#14202b;--termink:#d8e3ea;--crit:#b42318;--high:#b54708;--med:#8a6500;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10171d;--panel:#18222a;--ink:#e6edf2;--muted:#9fb0bc;--line:#2c3a45;--accent:#6bb7d1;--term:#0b1116;--termink:#d8e3ea;--crit:#ff8a80;--high:#ffb067;--med:#e6c25c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10171d;--panel:#18222a;--ink:#e6edf2;--muted:#9fb0bc;--line:#2c3a45;--accent:#6bb7d1;--term:#0b1116;--termink:#d8e3ea;--crit:#ff8a80;--high:#ffb067;--med:#e6c25c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,5vw,2.5rem)}
+a{color:var(--accent)}
+h1,h2{letter-spacing:-.02em;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3.2rem);margin:0 0 1rem;max-width:16ch}
+h2{font-size:1.5rem;margin:0 0 1rem}
+.hero{display:grid;grid-template-columns:1fr 1.1fr;gap:2.5rem;align-items:center;padding:4rem 0 3rem}
+.hero p{max-width:46ch;color:var(--muted);margin:0 0 1.5rem}
+.btns{display:flex;flex-wrap:wrap;gap:.75rem}
+.btn{display:inline-block;padding:.65rem 1.1rem;border-radius:6px;border:1px solid var(--accent);text-decoration:none;font-weight:500}
+.btn.main{background:var(--accent);color:var(--bg)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.term{background:var(--term);color:var(--termink);border-radius:8px;padding:1.1rem 1.2rem;font:13px/1.65 "IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;overflow-x:auto}
+.term .dim{color:#8196a5}
+.term .hit{color:#ffb067}
+.term .alert{display:block;margin-top:.9rem;padding-top:.8rem;border-top:1px solid #2c3a45}
+.term .c{color:#ff8a80;font-weight:500}
+section{padding:2.5rem 0;border-top:1px solid var(--line)}
+.scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{text-align:left;padding:.7rem .9rem;border-bottom:1px solid var(--line);font-size:.95rem;vertical-align:top}
+th{font-weight:600;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+.sev{font-weight:600}.Critical{color:var(--crit)}.High{color:var(--high)}.Medium{color:var(--med)}
+pre.code{background:var(--term);color:var(--termink);border-radius:8px;padding:1rem 1.2rem;overflow-x:auto;font:13.5px/1.6 "IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;margin:0}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+.cols p{margin:.25rem 0 1rem;color:var(--muted)}
+ul.plain{padding-left:1.2rem;margin:0}
+ul.plain li{margin:.45rem 0}
+footer{padding:2rem 0 3rem;color:var(--muted);border-top:1px solid var(--line);font-size:.95rem}
+@media (max-width:760px){.hero,.cols{grid-template-columns:1fr}.hero{padding-top:2.5rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <h1>Read the log. See the attack and the fix.</h1>
+      <p>Log Analyzer finds brute-force logins, web attacks, and scanners in SSH and web server logs, then ranks each alert and suggests a response. It runs in Docker and opens on localhost.</p>
+      <div class="btns">
+        <a class="btn main" href="https://github.com/mubassir-cyber/CODOMAX-DIGITAL-MODULE-06-CYBERSECURITY-CAPSTONE">View on GitHub</a>
+        <a class="btn" href="#run">Run it locally</a>
+      </div>
+    </div>
+    <pre class="term" aria-label="Example log lines and the alert they produce"><span class="dim">Nov  4 10:20:00 sshd: Failed password for root from 203.0.113.45</span>
+<span class="dim">Nov  4 10:20:03 sshd: Failed password for admin from 203.0.113.45</span>
+<span class="dim">Nov  4 10:20:06 sshd: Failed password for invalid user test ...</span>
+<span class="dim">... 5 more failures ...</span>
+<span class="hit">Nov  4 10:20:40 sshd: Accepted password for admin from 203.0.113.45</span>
+<span class="alert"><span class="c">CRITICAL</span>  Successful login after brute force
+IP        203.0.113.45   (8 failed attempts)
+ATT&amp;CK    T1110
+Response  Disable the account, reset credentials,
+          review its activity, enforce MFA.</span></pre>
+  </header>
+
+  <section>
+    <h2>What it detects</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Rule</th><th>Severity</th><th>Trigger</th><th>ATT&amp;CK</th></tr></thead>
+      <tbody>
+        <tr><td>Successful login after brute force</td><td class="sev Critical">Critical</td><td>A successful SSH login from an IP with 5 or more failures</td><td>T1110</td></tr>
+        <tr><td>SSH brute-force attempt</td><td class="sev High">High</td><td>5 or more failed SSH logins from one IP</td><td>T1110</td></tr>
+        <tr><td>SQL injection attempt</td><td class="sev High">High</td><td>Patterns such as UNION SELECT or OR 1=1 in the URL</td><td>T1190</td></tr>
+        <tr><td>Path traversal attempt</td><td class="sev High">High</td><td>../ or its encoded forms in the URL</td><td>T1190</td></tr>
+        <tr><td>Cross-site scripting attempt</td><td class="sev Medium">Medium</td><td>script tags or onerror in the URL</td><td>T1190</td></tr>
+        <tr><td>Directory scanning</td><td class="sev Medium">Medium</td><td>10 or more 404 responses to one IP</td><td>T1595</td></tr>
+        <tr><td>Security scanner detected</td><td class="sev Medium">Medium</td><td>User agent such as sqlmap, Nikto, or Nmap</td><td>T1595</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <pre class="code">Browser (localhost:5000)
+   |  upload or sample request
+   v
+Docker container
+   gunicorn -> Flask (app.py)
+      /             dashboard
+      /api/analyze  upload, read in memory, never saved
+      /api/sample   allow-listed sample logs
+      analyzer.py   parsing and detection rules</pre>
+  </section>
+
+  <section>
+    <h2>Built to be safe to run</h2>
+    <div class="cols">
+      <div>
+        <p>Logs are written by attackers, so the dashboard treats every field as untrusted.</p>
+        <ul class="plain">
+          <li>Results are inserted as text, never as HTML</li>
+          <li>Strict Content-Security-Policy and security headers</li>
+          <li>2 MB upload limit; files never touch the disk</li>
+          <li>Sample names come from an allow-list, not a path</li>
+        </ul>
+      </div>
+      <div>
+        <p>The container is locked down and only reachable from your own machine.</p>
+        <ul class="plain">
+          <li>Runs as a non-root user</li>
+          <li>All Linux capabilities dropped, no-new-privileges</li>
+          <li>Read-only filesystem</li>
+          <li>Port bound to 127.0.0.1 only</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="run">
+    <h2>Run it locally</h2>
+    <pre class="code">git clone https://github.com/mubassir-cyber/CODOMAX-DIGITAL-MODULE-06-CYBERSECURITY-CAPSTONE.git
+cd CODOMAX-DIGITAL-MODULE-06-CYBERSECURITY-CAPSTONE
+docker compose up --build -d
+# open http://localhost:5000</pre>
+    <p>Click an included sample log, or upload your own SSH auth log or Apache/Nginx access log. The project has 19 automated tests, all passing.</p>
+  </section>
+
+  <footer>
+    Module 06 Capstone, Codomax Digital Cybersecurity Internship. Built by Mubassir. For education and use on systems you own or are authorized to test.
+  </footer>
+</div>
+</body>
+</html>
